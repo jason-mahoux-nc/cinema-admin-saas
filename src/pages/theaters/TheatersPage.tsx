@@ -6,16 +6,9 @@ import { DataTable } from "@/components/ui/DataTable";
 import { theatersApi } from "@/services/api";
 import { Theatre } from "@/types/cinema.types";
 import TheatersForm from "./TheatersForm";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTitle, 
-  DialogHeader 
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TheatersPage: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedTheatre, setSelectedTheatre] = useState<Theatre | null>(null);
   const queryClient = useQueryClient();
 
   const { data: theaters = [], isLoading, isError } = useQuery({
@@ -35,24 +28,13 @@ const TheatersPage: React.FC = () => {
   });
 
   const handleEdit = (theatre: Theatre) => {
-    setSelectedTheatre(theatre);
-    setOpen(true);
+    // L'édition sera gérée dans le formulaire existant
   };
 
   const handleDelete = (theatre: Theatre) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${theatre.name} ?`)) {
       deleteMutation.mutate(theatre.id);
     }
-  };
-
-  const handleAdd = () => {
-    setSelectedTheatre(null);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedTheatre(null);
   };
 
   if (isLoading) {
@@ -111,29 +93,34 @@ const TheatersPage: React.FC = () => {
         </p>
       </div>
 
-      <DataTable
-        data={theaters}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAdd={handleAdd}
-        addButtonLabel="Ajouter un cinéma"
-        searchPlaceholder="Rechercher un cinéma..."
-      />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-cinema-darkGray text-white border-cinema-gray">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedTheatre ? "Modifier le cinéma" : "Ajouter un cinéma"}
-            </DialogTitle>
-          </DialogHeader>
-          <TheatersForm
-            theatre={selectedTheatre}
-            onClose={handleClose}
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Ajouter un nouveau cinéma</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TheatersForm 
+            theatre={null} 
+            onClose={() => {
+              // Form submission is handled within the form component
+            }} 
           />
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Liste des cinémas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={theaters}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchPlaceholder="Rechercher un cinéma..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

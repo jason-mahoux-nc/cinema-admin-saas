@@ -27,7 +27,7 @@ interface RoomsFormProps {
 
 const RoomsForm: React.FC<RoomsFormProps> = ({ room, onClose }) => {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<CreateRoomApiDto | UpdateRoomApiDto>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<CreateRoomApiDto | UpdateRoomApiDto>({
     defaultValues: room || {
       name: "",
       sizeX: 0,
@@ -62,7 +62,14 @@ const RoomsForm: React.FC<RoomsFormProps> = ({ room, onClose }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
       toast.success("Salle ajoutée avec succès");
-      onClose();
+      reset({
+        name: "",
+        sizeX: 0,
+        sizeY: 0,
+        screenId: "",
+        theaterId: "",
+      });
+      if (onClose) onClose();
     },
     onError: () => {
       toast.error("Erreur lors de l'ajout de la salle");
@@ -75,7 +82,7 @@ const RoomsForm: React.FC<RoomsFormProps> = ({ room, onClose }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
       toast.success("Salle mise à jour avec succès");
-      onClose();
+      if (onClose) onClose();
     },
     onError: () => {
       toast.error("Erreur lors de la mise à jour de la salle");
@@ -92,7 +99,7 @@ const RoomsForm: React.FC<RoomsFormProps> = ({ room, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nom</Label>
           <Input
@@ -187,11 +194,11 @@ const RoomsForm: React.FC<RoomsFormProps> = ({ room, onClose }) => {
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Annuler
+        <Button type="reset" variant="outline" onClick={() => reset()}>
+          Réinitialiser
         </Button>
         <Button type="submit" className="bg-cinema-yellow text-black hover:bg-cinema-yellow/90">
-          {room ? "Mettre à jour" : "Ajouter"}
+          {room ? "Mettre à jour" : "Enregistrer"}
         </Button>
       </div>
     </form>

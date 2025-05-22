@@ -21,7 +21,7 @@ interface TheatersFormProps {
 
 const TheatersForm: React.FC<TheatersFormProps> = ({ theatre, onClose }) => {
   const queryClient = useQueryClient();
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<CreateTheaterApiDto | UpdateTheaterApiDto>({
+  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<CreateTheaterApiDto | UpdateTheaterApiDto>({
     defaultValues: theatre || {
       name: "",
       inseeCode: "",
@@ -48,7 +48,15 @@ const TheatersForm: React.FC<TheatersFormProps> = ({ theatre, onClose }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["theaters"] });
       toast.success("Cinéma ajouté avec succès");
-      onClose();
+      reset({
+        name: "",
+        inseeCode: "",
+        website: "",
+        wheelchair: false,
+        threeD: false,
+        pictureUrl: "",
+      });
+      if (onClose) onClose();
     },
     onError: () => {
       toast.error("Erreur lors de l'ajout du cinéma");
@@ -61,7 +69,7 @@ const TheatersForm: React.FC<TheatersFormProps> = ({ theatre, onClose }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["theaters"] });
       toast.success("Cinéma mis à jour avec succès");
-      onClose();
+      if (onClose) onClose();
     },
     onError: () => {
       toast.error("Erreur lors de la mise à jour du cinéma");
@@ -78,7 +86,7 @@ const TheatersForm: React.FC<TheatersFormProps> = ({ theatre, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Nom</Label>
           <Input
@@ -146,11 +154,11 @@ const TheatersForm: React.FC<TheatersFormProps> = ({ theatre, onClose }) => {
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Annuler
+        <Button type="reset" variant="outline" onClick={() => reset()}>
+          Réinitialiser
         </Button>
         <Button type="submit" className="bg-cinema-yellow text-black hover:bg-cinema-yellow/90">
-          {theatre ? "Mettre à jour" : "Ajouter"}
+          {theatre ? "Mettre à jour" : "Enregistrer"}
         </Button>
       </div>
     </form>

@@ -6,18 +6,11 @@ import { DataTable } from "@/components/ui/DataTable";
 import { movieSessionsApi, roomsApi, theatersApi } from "@/services/api";
 import { MovieSession } from "@/types/cinema.types";
 import MovieSessionsForm from "./MovieSessionsForm";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTitle, 
-  DialogHeader 
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const MovieSessionsPage: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedSession, setSelectedSession] = useState<MovieSession | null>(null);
   const queryClient = useQueryClient();
 
   const { data: sessions = [], isLoading, isError } = useQuery({
@@ -60,24 +53,13 @@ const MovieSessionsPage: React.FC = () => {
   };
 
   const handleEdit = (session: MovieSession) => {
-    setSelectedSession(session);
-    setOpen(true);
+    // L'édition sera gérée directement dans le formulaire
   };
 
   const handleDelete = (session: MovieSession) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer cette séance ?`)) {
       deleteMutation.mutate(session.id);
     }
-  };
-
-  const handleAdd = () => {
-    setSelectedSession(null);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedSession(null);
   };
 
   if (isLoading) {
@@ -165,29 +147,34 @@ const MovieSessionsPage: React.FC = () => {
         </p>
       </div>
 
-      <DataTable
-        data={sessions}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAdd={handleAdd}
-        addButtonLabel="Ajouter une projection"
-        searchPlaceholder="Rechercher une projection..."
-      />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-cinema-darkGray text-white border-cinema-gray">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedSession ? "Modifier la projection" : "Ajouter une projection"}
-            </DialogTitle>
-          </DialogHeader>
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Ajouter une nouvelle projection</CardTitle>
+        </CardHeader>
+        <CardContent>
           <MovieSessionsForm
-            session={selectedSession}
-            onClose={handleClose}
+            session={null}
+            onClose={() => {
+              // Form submission is handled within the form component
+            }}
           />
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Liste des projections</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={sessions}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchPlaceholder="Rechercher une projection..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

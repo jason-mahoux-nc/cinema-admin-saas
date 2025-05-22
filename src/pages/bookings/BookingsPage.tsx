@@ -6,18 +6,11 @@ import { DataTable } from "@/components/ui/DataTable";
 import { bookingsApi, movieSessionsApi, seatsApi } from "@/services/api";
 import { Booking } from "@/types/cinema.types";
 import BookingsForm from "./BookingsForm";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTitle, 
-  DialogHeader 
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const BookingsPage: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const queryClient = useQueryClient();
 
   const { data: bookings = [], isLoading, isError } = useQuery({
@@ -68,24 +61,13 @@ const BookingsPage: React.FC = () => {
   };
 
   const handleEdit = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setOpen(true);
+    // L'édition sera gérée directement dans le formulaire
   };
 
   const handleDelete = (booking: Booking) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer cette réservation ?`)) {
       deleteMutation.mutate(booking.id);
     }
-  };
-
-  const handleAdd = () => {
-    setSelectedBooking(null);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedBooking(null);
   };
 
   if (isLoading) {
@@ -162,29 +144,34 @@ const BookingsPage: React.FC = () => {
         </p>
       </div>
 
-      <DataTable
-        data={bookings}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAdd={handleAdd}
-        addButtonLabel="Ajouter une réservation"
-        searchPlaceholder="Rechercher une réservation..."
-      />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-cinema-darkGray text-white border-cinema-gray">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedBooking ? "Modifier la réservation" : "Ajouter une réservation"}
-            </DialogTitle>
-          </DialogHeader>
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Ajouter une nouvelle réservation</CardTitle>
+        </CardHeader>
+        <CardContent>
           <BookingsForm
-            booking={selectedBooking}
-            onClose={handleClose}
+            booking={null}
+            onClose={() => {
+              // Form submission is handled within the form component
+            }}
           />
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Liste des réservations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={bookings}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchPlaceholder="Rechercher une réservation..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

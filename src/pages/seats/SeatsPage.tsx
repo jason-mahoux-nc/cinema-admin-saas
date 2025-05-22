@@ -7,12 +7,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { seatsApi, roomsApi } from "@/services/api";
 import { Seat, Room } from "@/types/cinema.types";
 import SeatsForm from "./SeatsForm";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogTitle, 
-  DialogHeader 
-} from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -24,8 +19,6 @@ import { Label } from "@/components/ui/label";
 
 const SeatsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [open, setOpen] = useState(false);
-  const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -64,28 +57,17 @@ const SeatsPage: React.FC = () => {
 
   const handleRoomChange = (roomId: string) => {
     setSelectedRoomId(roomId);
-    setSearchParams({ roomId });
+    setSearchParams(roomId ? { roomId } : {});
   };
 
   const handleEdit = (seat: Seat) => {
-    setSelectedSeat(seat);
-    setOpen(true);
+    // L'édition sera gérée directement dans le formulaire
   };
 
   const handleDelete = (seat: Seat) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer le siège ${seat.name} ?`)) {
       deleteMutation.mutate(seat.id);
     }
-  };
-
-  const handleAdd = () => {
-    setSelectedSeat(null);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedSeat(null);
   };
 
   const getRoomName = (roomId: string): string => {
@@ -139,70 +121,80 @@ const SeatsPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-cinema-darkGray p-6 rounded-lg border border-cinema-gray/40">
-        <div className="mb-4">
-          <Label htmlFor="room-filter" className="mb-2 block">
-            Filtrer par salle
-          </Label>
-          <Select
-            value={selectedRoomId || ""}
-            onValueChange={handleRoomChange}
-          >
-            <SelectTrigger id="room-filter" className="dark:bg-cinema-black dark:border-cinema-gray/40">
-              <SelectValue placeholder="Toutes les salles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Toutes les salles</SelectItem>
-              {rooms.map((room) => (
-                <SelectItem key={room.id} value={room.id}>
-                  {room.name} ({getRoomName(room.theaterId)})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Filtrer par salle</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Label htmlFor="room-filter" className="mb-2 block">
+              Sélectionnez une salle
+            </Label>
+            <Select
+              value={selectedRoomId || ""}
+              onValueChange={handleRoomChange}
+            >
+              <SelectTrigger id="room-filter" className="dark:bg-cinema-black dark:border-cinema-gray/40">
+                <SelectValue placeholder="Toutes les salles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Toutes les salles</SelectItem>
+                {rooms.map((room) => (
+                  <SelectItem key={room.id} value={room.id}>
+                    {room.name} ({getRoomName(room.theaterId)})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {selectedRoom && (
-          <div className="mb-4 p-4 border border-cinema-gray/40 rounded-md bg-cinema-black">
-            <h3 className="font-medium mb-2">Information sur la salle</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm text-cinema-gray">
-              <div>
-                <p><span className="font-medium text-white">Nom:</span> {selectedRoom.name}</p>
-                <p><span className="font-medium text-white">Dimensions:</span> {selectedRoom.sizeX} x {selectedRoom.sizeY} m</p>
-              </div>
-              <div>
-                <p><span className="font-medium text-white">Cinéma:</span> {getRoomName(selectedRoom.theaterId)}</p>
-                <p><span className="font-medium text-white">Nombre de sièges:</span> {seats.length}</p>
+          {selectedRoom && (
+            <div className="mb-4 p-4 border border-cinema-gray/40 rounded-md bg-cinema-black">
+              <h3 className="font-medium mb-2">Information sur la salle</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm text-cinema-gray">
+                <div>
+                  <p><span className="font-medium text-white">Nom:</span> {selectedRoom.name}</p>
+                  <p><span className="font-medium text-white">Dimensions:</span> {selectedRoom.sizeX} x {selectedRoom.sizeY} m</p>
+                </div>
+                <div>
+                  <p><span className="font-medium text-white">Cinéma:</span> {getRoomName(selectedRoom.theaterId)}</p>
+                  <p><span className="font-medium text-white">Nombre de sièges:</span> {seats.length}</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
 
-      <DataTable
-        data={seats}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAdd={handleAdd}
-        addButtonLabel="Ajouter un siège"
-        searchPlaceholder="Rechercher un siège..."
-      />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-cinema-darkGray text-white border-cinema-gray">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedSeat ? "Modifier le siège" : "Ajouter un siège"}
-            </DialogTitle>
-          </DialogHeader>
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Ajouter un nouveau siège</CardTitle>
+        </CardHeader>
+        <CardContent>
           <SeatsForm
-            seat={selectedSeat}
+            seat={null}
             preselectedRoomId={selectedRoomId}
-            onClose={handleClose}
+            onClose={() => {
+              // Form submission is handled within the form component
+            }}
           />
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-cinema-darkGray border-cinema-gray/40">
+        <CardHeader>
+          <CardTitle className="text-white">Liste des sièges</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            data={seats}
+            columns={columns}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            searchPlaceholder="Rechercher un siège..."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
