@@ -109,7 +109,7 @@ const SeatsForm: React.FC<SeatsFormProps> = ({ seat, preselectedRoomId, onClose 
           <Label htmlFor="roomId">Salle</Label>
           <Select
             onValueChange={(value) => setValue("roomId", value)}
-            defaultValue={watch("roomId")}
+            defaultValue={watch("roomId") || undefined}
           >
             <SelectTrigger className="dark:bg-cinema-black dark:border-cinema-gray/40">
               <SelectValue placeholder="Sélectionnez une salle" />
@@ -184,3 +184,4 @@ const SeatsForm: React.FC<SeatsFormProps> = ({ seat, preselectedRoomId, onClose 
 };
 
 export default SeatsForm;
+

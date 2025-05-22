@@ -78,8 +78,13 @@ const SeatsPage: React.FC = () => {
   });
 
   const handleRoomChange = (roomId: string) => {
-    setSelectedRoomId(roomId);
-    setSearchParams(roomId ? { roomId } : {});
+    if (roomId === "all") {
+      setSelectedRoomId(null);
+      setSearchParams({});
+    } else {
+      setSelectedRoomId(roomId);
+      setSearchParams({ roomId });
+    }
   };
 
   const handleEdit = (seat: Seat) => {
@@ -166,14 +171,14 @@ const SeatsPage: React.FC = () => {
               Sélectionnez une salle
             </Label>
             <Select
-              value={selectedRoomId || ""}
+              value={selectedRoomId || "all"}
               onValueChange={handleRoomChange}
             >
               <SelectTrigger id="room-filter" className="dark:bg-cinema-black dark:border-cinema-gray/40">
                 <SelectValue placeholder="Toutes les salles" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les salles</SelectItem>
+                <SelectItem value="all">Toutes les salles</SelectItem>
                 {rooms.map((room) => (
                   <SelectItem key={room.id} value={room.id}>
                     {room.name} ({getRoomName(room.theaterId)})
@@ -241,3 +246,4 @@ const SeatsPage: React.FC = () => {
 };
 
 export default SeatsPage;
+
