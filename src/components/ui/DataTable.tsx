@@ -77,7 +77,7 @@ export function DataTable<T extends { id: string }>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
-                  className="text-center h-24"
+                  className="text-center h-24 text-white hover:text-black"
                 >
                   Aucune donnée disponible
                 </TableCell>
