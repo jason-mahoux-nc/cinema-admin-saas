@@ -101,6 +101,47 @@ const SeatsPage: React.FC = () => {
 
   const isLoading = isSeatsLoading || isRoomsLoading;
 
+  // Define the columns for the DataTable
+  const columns = [
+    {
+      header: "Nom",
+      accessorKey: "name" as const,
+    },
+    {
+      header: "Salle",
+      accessorKey: "roomId" as const,
+      cell: (seat: Seat) => (
+        <span>{getRoomName(seat.roomId)}</span>
+      ),
+    },
+    {
+      header: "Ligne",
+      accessorKey: "row" as const,
+    },
+    {
+      header: "Colonne",
+      accessorKey: "column" as const,
+    },
+    {
+      header: "Type",
+      accessorKey: "type" as const,
+    },
+    {
+      header: "État",
+      accessorKey: "status" as const,
+      cell: (seat: Seat) => (
+        <span className={
+          seat.status === "AVAILABLE" ? "text-green-500" : 
+          seat.status === "RESERVED" ? "text-yellow-500" : 
+          seat.status === "OCCUPIED" ? "text-red-500" : 
+          "text-gray-500"
+        }>
+          {seat.status}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
