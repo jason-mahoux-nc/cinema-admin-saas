@@ -9,23 +9,55 @@ import BookingsForm from "./BookingsForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const BookingsPage: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: bookings = [], isLoading, isError } = useQuery({
+  const { 
+    data: bookings = [], 
+    isLoading: isBookingsLoading, 
+    isError: isBookingsError 
+  } = useQuery({
     queryKey: ["bookings"],
     queryFn: bookingsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des réservations:", err);
+      },
+    },
+    retry: 1
   });
 
-  const { data: sessions = [] } = useQuery({
+  const { 
+    data: sessions = [], 
+    isLoading: isSessionsLoading, 
+    isError: isSessionsError 
+  } = useQuery({
     queryKey: ["movie-sessions"],
     queryFn: movieSessionsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des séances:", err);
+      },
+    },
+    retry: 1
   });
 
-  const { data: seats = [] } = useQuery({
+  const { 
+    data: seats = [], 
+    isLoading: isSeatsLoading, 
+    isError: isSeatsError 
+  } = useQuery({
     queryKey: ["seats"],
     queryFn: seatsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des sièges:", err);
+      },
+    },
+    retry: 1
   });
 
   const deleteMutation = useMutation({
@@ -70,13 +102,8 @@ const BookingsPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
-  }
-
-  if (isError) {
-    return <div className="text-red-500 p-8">Erreur lors du chargement des réservations</div>;
-  }
+  const isLoading = isBookingsLoading || isSessionsLoading || isSeatsLoading;
+  const isError = isBookingsError || isSessionsError || isSeatsError;
 
   const columns = [
     {
@@ -144,6 +171,17 @@ const BookingsPage: React.FC = () => {
         </p>
       </div>
 
+      {isError && (
+        <Alert variant="destructive" className="bg-red-900/20 border-red-900 text-white">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Problème de connexion</AlertTitle>
+          <AlertDescription>
+            Impossible de se connecter au serveur. Les données affichées peuvent être incomplètes.
+            Vous pouvez néanmoins utiliser les formulaires et voir les données déjà chargées.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="bg-cinema-darkGray border-cinema-gray/40">
         <CardHeader>
           <CardTitle className="text-white">Ajouter une nouvelle réservation</CardTitle>
@@ -163,13 +201,19 @@ const BookingsPage: React.FC = () => {
           <CardTitle className="text-white">Liste des réservations</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            data={bookings}
-            columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            searchPlaceholder="Rechercher une réservation..."
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              <div className="animate-pulse text-cinema-gray">Chargement des données...</div>
+            </div>
+          ) : (
+            <DataTable
+              data={bookings}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              searchPlaceholder="Rechercher une réservation..."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

@@ -9,23 +9,55 @@ import MovieSessionsForm from "./MovieSessionsForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const MovieSessionsPage: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: sessions = [], isLoading, isError } = useQuery({
+  const { 
+    data: sessions = [], 
+    isLoading: isSessionsLoading, 
+    isError: isSessionsError 
+  } = useQuery({
     queryKey: ["movie-sessions"],
     queryFn: movieSessionsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des séances:", err);
+      },
+    },
+    retry: 1
   });
 
-  const { data: rooms = [] } = useQuery({
+  const { 
+    data: rooms = [], 
+    isLoading: isRoomsLoading, 
+    isError: isRoomsError 
+  } = useQuery({
     queryKey: ["rooms"],
     queryFn: roomsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des salles:", err);
+      },
+    },
+    retry: 1
   });
 
-  const { data: theaters = [] } = useQuery({
+  const { 
+    data: theaters = [], 
+    isLoading: isTheatersLoading, 
+    isError: isTheatersError 
+  } = useQuery({
     queryKey: ["theaters"],
     queryFn: theatersApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des cinémas:", err);
+      },
+    },
+    retry: 1
   });
 
   const deleteMutation = useMutation({
@@ -62,13 +94,8 @@ const MovieSessionsPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
-  }
-
-  if (isError) {
-    return <div className="text-red-500 p-8">Erreur lors du chargement des séances</div>;
-  }
+  const isLoading = isSessionsLoading || isRoomsLoading || isTheatersLoading;
+  const isError = isSessionsError || isRoomsError || isTheatersError;
 
   const formatDateTime = (dateTime: string) => {
     try {
@@ -147,6 +174,17 @@ const MovieSessionsPage: React.FC = () => {
         </p>
       </div>
 
+      {isError && (
+        <Alert variant="destructive" className="bg-red-900/20 border-red-900 text-white">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Problème de connexion</AlertTitle>
+          <AlertDescription>
+            Impossible de se connecter au serveur. Les données affichées peuvent être incomplètes.
+            Vous pouvez néanmoins utiliser les formulaires et voir les données déjà chargées.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="bg-cinema-darkGray border-cinema-gray/40">
         <CardHeader>
           <CardTitle className="text-white">Ajouter une nouvelle projection</CardTitle>
@@ -166,13 +204,19 @@ const MovieSessionsPage: React.FC = () => {
           <CardTitle className="text-white">Liste des projections</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            data={sessions}
-            columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            searchPlaceholder="Rechercher une projection..."
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              <div className="animate-pulse text-cinema-gray">Chargement des données...</div>
+            </div>
+          ) : (
+            <DataTable
+              data={sessions}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              searchPlaceholder="Rechercher une projection..."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

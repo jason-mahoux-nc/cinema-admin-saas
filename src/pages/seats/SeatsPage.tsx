@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const SeatsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,14 +32,34 @@ const SeatsPage: React.FC = () => {
     }
   }, [roomIdFromUrl]);
 
-  const { data: allSeats = [], isLoading: isSeatsLoading } = useQuery({
+  const { 
+    data: allSeats = [], 
+    isLoading: isSeatsLoading, 
+    isError: isSeatsError 
+  } = useQuery({
     queryKey: ["seats"],
     queryFn: seatsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des sièges:", err);
+      },
+    },
+    retry: 1
   });
 
-  const { data: rooms = [], isLoading: isRoomsLoading } = useQuery({
+  const { 
+    data: rooms = [], 
+    isLoading: isRoomsLoading, 
+    isError: isRoomsError 
+  } = useQuery({
     queryKey: ["rooms"],
     queryFn: roomsApi.getAll,
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des salles:", err);
+      },
+    },
+    retry: 1
   });
 
   const seats = selectedRoomId 
@@ -79,39 +101,6 @@ const SeatsPage: React.FC = () => {
 
   const isLoading = isSeatsLoading || isRoomsLoading;
 
-  if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
-  }
-
-  const columns = [
-    {
-      header: "Nom",
-      accessorKey: "name" as const,
-    },
-    {
-      header: "Salle",
-      accessorKey: "roomId" as const,
-      cell: (seat: Seat) => <span>{getRoomName(seat.roomId)}</span>,
-    },
-    {
-      header: "Position X",
-      accessorKey: "positionX" as const,
-    },
-    {
-      header: "Position Y",
-      accessorKey: "positionY" as const,
-    },
-    {
-      header: "Disponible",
-      accessorKey: "available" as const,
-      cell: (seat: Seat) => (
-        <span className={seat.available ? "text-green-500" : "text-red-500"}>
-          {seat.available ? "Oui" : "Non"}
-        </span>
-      ),
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <div>
@@ -120,6 +109,17 @@ const SeatsPage: React.FC = () => {
           Administrez les sièges de vos salles de cinéma, leurs positions et leur disponibilité.
         </p>
       </div>
+
+      {(isSeatsError || isRoomsError) && (
+        <Alert variant="destructive" className="bg-red-900/20 border-red-900 text-white">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Problème de connexion</AlertTitle>
+          <AlertDescription>
+            Impossible de se connecter au serveur. Les données affichées peuvent être incomplètes.
+            Vous pouvez néanmoins utiliser les formulaires et voir les données déjà chargées.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card className="bg-cinema-darkGray border-cinema-gray/40">
         <CardHeader>
@@ -186,13 +186,19 @@ const SeatsPage: React.FC = () => {
           <CardTitle className="text-white">Liste des sièges</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            data={seats}
-            columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            searchPlaceholder="Rechercher un siège..."
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              <div className="animate-pulse text-cinema-gray">Chargement des données...</div>
+            </div>
+          ) : (
+            <DataTable
+              data={seats}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              searchPlaceholder="Rechercher un siège..."
+            />
+          )}
         </CardContent>
       </Card>
     </div>
