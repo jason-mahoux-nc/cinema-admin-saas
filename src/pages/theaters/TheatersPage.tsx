@@ -21,8 +21,10 @@ const TheatersPage: React.FC = () => {
   } = useQuery({
     queryKey: ["theaters"],
     queryFn: theatersApi.getAll,
-    onError: (err) => {
-      console.error("Erreur lors du chargement des cinémas:", err);
+    meta: {
+      onError: (err: any) => {
+        console.error("Erreur lors du chargement des cinémas:", err);
+      },
     },
     retry: 1
   });
