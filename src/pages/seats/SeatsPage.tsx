@@ -102,41 +102,35 @@ const SeatsPage: React.FC = () => {
   const isLoading = isSeatsLoading || isRoomsLoading;
 
   // Define the columns for the DataTable
+  // We're updating these to match the Seat type definition
   const columns = [
     {
       header: "Nom",
-      accessorKey: "name" as const,
+      accessorKey: "name" as keyof Seat,
     },
     {
       header: "Salle",
-      accessorKey: "roomId" as const,
-      cell: (seat: Seat) => (
-        <span>{getRoomName(seat.roomId)}</span>
+      accessorKey: "roomId" as keyof Seat,
+      cell: (item: Seat) => (
+        <span>{getRoomName(item.roomId)}</span>
       ),
     },
     {
-      header: "Ligne",
-      accessorKey: "row" as const,
+      header: "Position X",
+      accessorKey: "positionX" as keyof Seat,
     },
     {
-      header: "Colonne",
-      accessorKey: "column" as const,
+      header: "Position Y",
+      accessorKey: "positionY" as keyof Seat,
     },
     {
-      header: "Type",
-      accessorKey: "type" as const,
-    },
-    {
-      header: "État",
-      accessorKey: "status" as const,
-      cell: (seat: Seat) => (
+      header: "Disponibilité",
+      accessorKey: "available" as keyof Seat,
+      cell: (item: Seat) => (
         <span className={
-          seat.status === "AVAILABLE" ? "text-green-500" : 
-          seat.status === "RESERVED" ? "text-yellow-500" : 
-          seat.status === "OCCUPIED" ? "text-red-500" : 
-          "text-gray-500"
+          item.available ? "text-green-500" : "text-red-500"
         }>
-          {seat.status}
+          {item.available ? "Disponible" : "Indisponible"}
         </span>
       ),
     },
