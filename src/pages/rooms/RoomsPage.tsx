@@ -8,18 +8,36 @@ import { Room } from "@/types/cinema.types";
 import RoomsForm from "./RoomsForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const RoomsPage: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: rooms = [], isLoading, isError } = useQuery({
+  const { 
+    data: rooms = [], 
+    isLoading, 
+    isError, 
+    error 
+  } = useQuery({
     queryKey: ["rooms"],
     queryFn: roomsApi.getAll,
+    onError: (err) => {
+      console.error("Erreur lors du chargement des salles:", err);
+    },
+    retry: 1
   });
 
-  const { data: theaters = [] } = useQuery({
+  const { 
+    data: theaters = [], 
+    isError: isTheatersError 
+  } = useQuery({
     queryKey: ["theaters"],
     queryFn: theatersApi.getAll,
+    onError: (err) => {
+      console.error("Erreur lors du chargement des cinémas:", err);
+    },
+    retry: 1
   });
 
   const deleteMutation = useMutation({
@@ -42,14 +60,6 @@ const RoomsPage: React.FC = () => {
       deleteMutation.mutate(room.id);
     }
   };
-
-  if (isLoading) {
-    return <div className="flex justify-center p-8">Chargement...</div>;
-  }
-
-  if (isError) {
-    return <div className="text-red-500 p-8">Erreur lors du chargement des salles</div>;
-  }
 
   const getTheaterName = (theaterId: string) => {
     const theater = theaters.find((theater) => theater.id === theaterId);
@@ -94,6 +104,17 @@ const RoomsPage: React.FC = () => {
         </p>
       </div>
 
+      {(isError || isTheatersError) && (
+        <Alert variant="destructive" className="bg-red-900/20 border-red-900 text-white">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Problème de connexion</AlertTitle>
+          <AlertDescription>
+            Impossible de se connecter au serveur. Les données affichées peuvent être incomplètes.
+            Vous pouvez néanmoins utiliser les formulaires et voir les données déjà chargées.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="bg-cinema-darkGray border-cinema-gray/40">
         <CardHeader>
           <CardTitle className="text-white">Ajouter une nouvelle salle</CardTitle>
@@ -113,13 +134,19 @@ const RoomsPage: React.FC = () => {
           <CardTitle className="text-white">Liste des salles</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable
-            data={rooms}
-            columns={columns}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            searchPlaceholder="Rechercher une salle..."
-          />
+          {isLoading ? (
+            <div className="flex justify-center p-4">
+              <div className="animate-pulse text-cinema-gray">Chargement des données...</div>
+            </div>
+          ) : (
+            <DataTable
+              data={rooms}
+              columns={columns}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              searchPlaceholder="Rechercher une salle..."
+            />
+          )}
         </CardContent>
       </Card>
     </div>

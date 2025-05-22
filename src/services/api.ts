@@ -27,23 +27,29 @@ async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  try {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
 
-  const response = await fetch(url, { ...options, headers });
-  
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    const response = await fetch(url, { ...options, headers });
+    
+    if (!response.ok) {
+      console.error(`API Error: ${response.status} ${response.statusText} for ${url}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    
+    if (response.status === 204) {
+      return {} as T;
+    }
+    
+    return response.json() as Promise<T>;
+  } catch (error) {
+    console.error('API Request failed:', error);
+    throw error;
   }
-  
-  if (response.status === 204) {
-    return {} as T;
-  }
-  
-  return response.json() as Promise<T>;
 }
 
 // Theaters API
