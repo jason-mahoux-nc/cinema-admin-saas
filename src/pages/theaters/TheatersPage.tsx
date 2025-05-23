@@ -1,11 +1,10 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DataTable } from "@/components/ui/DataTable";
 import { theatersApi } from "@/services/api";
 import { Theatre } from "@/types/cinema.types";
-import TheatersForm from "./TheatersForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -108,20 +107,6 @@ const TheatersPage: React.FC = () => {
           </AlertDescription>
         </Alert>
       )}
-
-      <Card className="bg-cinema-darkGray border-cinema-gray/40">
-        <CardHeader>
-          <CardTitle className="text-white">Ajouter un nouveau cinéma</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <TheatersForm 
-            theatre={null} 
-            onClose={() => {
-              // Form submission is handled within the form component
-            }} 
-          />
-        </CardContent>
-      </Card>
 
       <Card className="bg-cinema-darkGray border-cinema-gray/40">
         <CardHeader>
